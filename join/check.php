@@ -55,7 +55,7 @@
                   <td><div class="text-center">Seed kun</div></td>
                 </tr>
                 <tr>
-                  <td><div class="text-center">メールアドレス</div></td>
+                  <td><div class="text-center"> メールアドレス</div></td>
                   <td><div class="text-center">seed@nex.com</div></td>
                 </tr>
                 <tr>
