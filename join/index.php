@@ -14,11 +14,20 @@ if(!empty($_POST)){
   $error['email'] = 'blank';
  }
 //パスワード（空チェック、文字長チェック：４文字以上）
+ $password = htmlspecialchars($_POST['password'], ENT_QUOTES);
+ $password2 = htmlspecialchars($_POST['password2'], ENT_QUOTES);
+
  if($_POST['password'] == ''){
   $error['password'] = 'blank';
  }elseif (strlen($_POST['password'])<4){
   $error['password'] = 'length';
+ }
+
+ if($password !== $password2){
+  $error['password2'] = 'notsame';
 }
+
+//確認用パスワード（空チェック、文字長チェック：４文字以上）
 
 //画像ファイルの拡張子チェック($_FILES)
 $fileName = $_FILES['picture_path']['name'];
@@ -132,9 +141,24 @@ if(empty($error)){
                <?php }elseif(isset($error['password']) && $error['password'] == 'length'){?>
                <p class="error">* パスワードは４文字以上で入力してください。</p>
                   <?php } ?>
-
             </div>
           </div>
+
+             <div class="form-group">
+          <label class="col-sm-4 control-label">確認用パスワード</label>
+            <div class="col-sm-8">
+                  <input type="password" name="password2" class="form-control" placeholder="">
+                  <?php if(isset($error['password']) && $error['password'] == 'blank'){?>
+              <p class="error">* パスワードを入力してください</p>
+               <?php }elseif(isset($error['password']) && $error['password'] == 'length'){?>
+               <p class="error">* パスワードは４文字以上で入力してください。</p>
+               <?php } ?>
+               <?php if(isset($error['password2']) && $error['password2'] == 'notsame'){?>
+               <p class="error">* 確認用のパスワードと同一ではありません。</p>
+               <?php } ?>
+               </div>
+               </div>
+
           <!-- プロフィール写真 -->
           <div class="form-group">
             <label class="col-sm-4 control-label">プロフィール写真</label>
