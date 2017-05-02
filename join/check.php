@@ -68,7 +68,7 @@ session_start();
                 </tr>
                 <tr>
                   <td><div class="text-center">プロフィール画像</div></td>
-                  <td><div class="text-center"><img src="<?php echo $_SESSION['join']['picture_path']; ?>" width="100" height="100" ></div></td>
+                  <td><div class="text-center"><img src="../member_picture/<?php echo $_SESSION['join']['picture_path']; ?>" width="100" height="100" ></div></td>
                 </tr>
               </tbody>
             </table>
