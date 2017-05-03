@@ -1,5 +1,15 @@
 <?php
 session_start();
+
+// セッションにデータがなかったらindex.phpへ遷移する
+if(!isset($_SESSION['join'])){
+  header('Location: index.php');
+  exit();
+}
+
+$nick_name = htmlspecialchars($_SESSION['join']['nick_name'],ENT_QUOTES,'UTF-8');
+$email = htmlspecialchars($_SESSION['join']['email'],ENT_QUOTES,'UTF-8');
+$picture_path = htmlspecialchars($_SESSION['join']['picture_path'],ENT_QUOTES,'UTF-8');
 ?>
 
 <!DOCTYPE html>
@@ -56,19 +66,21 @@ session_start();
                 <!-- 登録内容を表示 -->
                 <tr>
                   <td><div class="text-center">ニックネーム</div></td>
-                  <td><div class="text-center"><?php echo $_SESSION['join']['nick_name']?></div></td>
+                  <td><div class="text-center"><?php echo $nick_name;?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center"> メールアドレス</div></td>
-                  <td><div class="text-center"><?php echo $_SESSION['join']['email']?></div></td>
+                  <td><div class="text-center"><?php echo $email;?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">パスワード</div></td>
                   <td><div class="text-center">●●●●●●●●</div></td>
                 </tr>
                 <tr>
+                <!-- <img src="../member_picture/<?php //echo $_SESSION['join']['picture_path']; ?>"でもよい -->
                   <td><div class="text-center">プロフィール画像</div></td>
-                  <td><div class="text-center"><img src="../member_picture/<?php echo $_SESSION['join']['picture_path']; ?>" width="100" height="100" ></div></td>
+                  <td><div class="text-center"><?php echo '<img src="../member_picture/' . $picture_path . '" width="100" height="100">'; ?>
+                  </div></td>
                 </tr>
               </tbody>
             </table>
