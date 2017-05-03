@@ -52,9 +52,14 @@ if(empty($error)){
   header('Location:check.php');
 }
 }
+
+//書き直し
+if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'rewrite'){
+   $_POST = $_SESSION['join'];
+   $error['rewrite'] = true;
+}
+
  ?>
-
-
 <!DOCTYPE html>
 <html lang="ja">
   <head>
