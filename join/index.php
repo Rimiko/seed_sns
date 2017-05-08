@@ -22,12 +22,12 @@ if(!empty($_POST)){
  }elseif (strlen($_POST['password'])<4){
   $error['password'] = 'length';
  }
-
+//確認用パスワード（空チェック、文字長チェック：４文字以上）
  if($password !== $password2){
   $error['password2'] = 'notsame';
 }
 
-//確認用パスワード（空チェック、文字長チェック：４文字以上）
+
 
 //画像ファイルの拡張子チェック($_FILES)
 $fileName = $_FILES['picture_path']['name'];
@@ -148,14 +148,14 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'rewrite'){
                   <?php } ?>
             </div>
           </div>
-
+          <!-- 確認用パスワード -->
              <div class="form-group">
           <label class="col-sm-4 control-label">確認用パスワード</label>
             <div class="col-sm-8">
                   <input type="password" name="password2" class="form-control" placeholder="">
-                  <?php if(isset($error['password']) && $error['password'] == 'blank'){?>
+                  <?php if(isset($error['password2']) && $error['password2'] == 'blank'){?>
               <p class="error">* パスワードを入力してください</p>
-               <?php }elseif(isset($error['password']) && $error['password'] == 'length'){?>
+               <?php }elseif(isset($error['password2']) && $error['password2'] == 'length'){?>
                <p class="error">* パスワードは４文字以上で入力してください。</p>
                <?php } ?>
                <?php if(isset($error['password2']) && $error['password2'] == 'notsame'){?>

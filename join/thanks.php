@@ -1,4 +1,5 @@
 <?php
+session_start();
  //会員登録が済んだのでSEESION変数に保存していた入力値を削除
  unset($_SESSION['join']);
 ?>
@@ -51,7 +52,7 @@
           ご登録ありがとうございます。 <br>
           下記ボタンよりログインして下さい。
         </div>
-        <a href="../login.html" class="btn btn-default">ログイン</a>
+        <a href="../login.php" class="btn btn-default">ログイン</a>
       </div>
     </div>
   </div>
