@@ -1,41 +1,97 @@
 <?php
 session_start();
 
+//ログイン状態のチェック
+//ログインしてると判断できる条件
+//１．セッションにidが入っていること
+//2.最後の行動から１時間以内であること
+if ((isset($_SESSION['login_member_id'])) && ($_SESSION['time'] + 3600>time())){
+
+//ログインしている
+//セッションの時間を更新
+  $_SESSION['time'] = time();
+
+}else{
+//ログインしてない
+  header('Location: login.php');
+  exit();
+}
+
+
+
+//dbconnect.phpを読み込む
+require('dbconnect.php');
+
+//ログインしている人の情報を取得（名前の表示）
+
+//SQL実行し、ユーザーのデータを取得
+  $sql =sprintf('SELECT * FROM `members` WHERE `member_id` = %d', mysqli_real_escape_string($db,$_SESSION['login_member_id']));
+
+  $record = mysqli_query($db,$sql) or die(mysqli_error($db));
+  $member = mysqli_fetch_assoc($record);
+
+
+
 //データベースに接続する
-    $dsn = 'mysql:dbname=seed_sns;host=localhost';
-    $user = 'root';
-    $password='';
-    $dbh = new PDO($dsn, $user, $password);
-    $dbh->query('SET NAMES utf8');
-
-
+    // $dsn = 'mysql:dbname=seed_sns;host=localhost';
+    // $user = 'root';
+    // $password='';
+    // $dbh = new PDO($dsn, $user, $password);
+    // $dbh->query('SET NAMES utf8');
 
     // ２．SQL文を実行する
-  if (!empty($_POST)) {//ポスト送信したときのみに動くようにする
-   $tweet = htmlspecialchars($_POST['tweet']);
-    $sql = 'INSERT INTO `tweets`(`tweet_id`, `tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES (NULL, "'.$tweet.'", "'.$_SESSION['login_member_id'].'", "%s", now(), now())';
-   if(empty($error)){
-    $sql = 'SELECT * FROM `members` WHERE `nick_name` = "%s"';
-    }
-    // SQLを実行
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
-    }
-    $sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC;';
-    //SQLを実行
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
+  if (!empty($_POST)) {
+     //補足：つぶやきが空っぽではないときだけ、insertする
+    if($_POST['tweet'] !== ''){
+   //ポスト送信したときのみに動くようにする
+    $tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');
+    $login_member_id = $_SESSION['login_member_id'];
+    $reply_tweet_id = 0;
 
-    $tweet_datas=array();
+    // $sql = 'INSERT INTO `tweets`(`tweet_id`, `tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES (NULL, "'.$tweet.'", "'.$_SESSION['login_member_id'].'", "%s", now(), now())';
+    $sql = sprintf('INSERT INTO `tweets` (`tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES ("%s", "%s", "%s", now(), now());',
+    mysqli_real_escape_string($db,$tweet),
+    mysqli_real_escape_string($db,$login_member_id),
+    mysqli_real_escape_string($db,$reply_tweet_id));
+    mysqli_query($db,$sql) or die(mysqli_error($db));
+
+    //データの再送信の防止（これをつけると再読み込みでPOST送信が発生しなくなる！）
+    header("Location: index.php");
+    exit();
+  }
+}
+
+     $tweet_datas=array();
 
     while (1) {
-      $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+      $rec = $member->fetch(PDO::FETCH_ASSOC);
     if ($rec == false) {
         break;
       }
      $tweet_datas[]=$rec;
      }
   $dbh = null;
+
+    // SQLを実行
+    // $stmt = $dbh->prepare($sql);
+    // $stmt->execute();
+
+    // $sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC;';
+
+    // //SQLを実行
+    // $stmt = $dbh->prepare($sql);
+    // $stmt->execute();
+    // $tweet_datas=array();
+
+    // while (1) {
+    //   $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+    // if ($rec == false) {
+    //     break;
+    //   }
+    //  $tweet_datas[]=$rec;
+    //  }
+
+  // $dbh = null;
 
 
   ?>
@@ -87,7 +143,7 @@ session_start();
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ<?php $_SESSION['nick_name'] ?></legend>
+        <legend>ようこそ<?php echo $member['nick_name']; ?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
@@ -105,12 +161,12 @@ session_start();
           </ul>
         </form>
       </div>
-      <?php  foreach ($tweet_datas as $tweet_each){ ?>
+      <?php foreach($tweet_datas as $tweet_each){ ?>
       <div class="col-md-8 content-margin-top">
         <div class="msg">
           <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p>
-            <?php  echo $tweet_each['tweet']; ?><span class="name"> (Seed kun) </span>
+          <p><?php echo $tweet_each['tweet'];?>
+            <span class="name"> (Seed kun) </span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
@@ -123,6 +179,7 @@ session_start();
         </div>
       </div>
       <?php } ?>
+
     </div>
   </div>
 
