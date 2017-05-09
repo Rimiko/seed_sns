@@ -33,11 +33,11 @@ require('dbconnect.php');
 
 
 //データベースに接続する
-    // $dsn = 'mysql:dbname=seed_sns;host=localhost';
-    // $user = 'root';
-    // $password='';
-    // $dbh = new PDO($dsn, $user, $password);
-    // $dbh->query('SET NAMES utf8');
+     $dsn = 'mysql:dbname=seed_sns;host=localhost';
+     $user = 'root';
+     $password='';
+     $dbh = new PDO($dsn, $user, $password);
+     $dbh->query('SET NAMES utf8');
 
     // ２．SQL文を実行する
   if (!empty($_POST)) {
@@ -55,22 +55,30 @@ require('dbconnect.php');
     mysqli_real_escape_string($db,$reply_tweet_id));
     mysqli_query($db,$sql) or die(mysqli_error($db));
 
+
     //データの再送信の防止（これをつけると再読み込みでPOST送信が発生しなくなる！）
     header("Location: index.php");
     exit();
   }
-}
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
+   }
+    $sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC;';
+    //SQLを実行
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
 
-     $tweet_datas=array();
+    $tweet_datas = array();
 
     while (1) {
-      $rec = $member->fetch(PDO::FETCH_ASSOC);
+      $rec = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($rec == false) {
         break;
       }
-     $tweet_datas[]=$rec;
+     $tweet_datas[] = $rec;
      }
   $dbh = null;
+     var_dump($sql);
 
     // SQLを実行
     // $stmt = $dbh->prepare($sql);
@@ -165,7 +173,7 @@ require('dbconnect.php');
       <div class="col-md-8 content-margin-top">
         <div class="msg">
           <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
-          <p><?php echo $tweet_each['tweet'];?>
+          <p><?php  echo $tweet_each['tweet']; ?>
             <span class="name"> (Seed kun) </span>
             [<a href="#">Re</a>]
           </p>
@@ -179,7 +187,6 @@ require('dbconnect.php');
         </div>
       </div>
       <?php } ?>
-
     </div>
   </div>
 
