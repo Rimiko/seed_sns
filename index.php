@@ -33,11 +33,11 @@ require('dbconnect.php');
 
 
 //データベースに接続する
-     $dsn = 'mysql:dbname=seed_sns;host=localhost';
-     $user = 'root';
-     $password='';
-     $dbh = new PDO($dsn, $user, $password);
-     $dbh->query('SET NAMES utf8');
+     // $dsn = 'mysql:dbname=seed_sns;host=localhost';
+     // $user = 'root';
+     // $password='';
+     // $dbh = new PDO($dsn, $user, $password);
+     // $dbh->query('SET NAMES utf8');
 
     // ２．SQL文を実行する
   if (!empty($_POST)) {
@@ -60,24 +60,36 @@ require('dbconnect.php');
     header("Location: index.php");
     exit();
   }
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
-   }
-    $sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC;';
-    //SQLを実行
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
+}
 
-    $tweet_datas = array();
+  //投稿を取得する
+  $sql = 'SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id ORDER BY `created` DESC;';
+  $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
+  $tweet_array = array();
+  while ($tweet = mysqli_fetch_assoc($tweets)) {
+  $tweet_array[] = $tweet;
+  }
 
-    while (1) {
-      $rec = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($rec == false) {
-        break;
-      }
-     $tweet_datas[] = $rec;
-     }
-  $dbh = null;
+
+
+  //   $stmt = $dbh->prepare($sql);
+  //   $stmt->execute();
+  //  }
+  //   $sql = 'SELECT * FROM `tweets` ORDER BY `created` DESC;';
+  //   //SQLを実行
+  //   $stmt = $dbh->prepare($sql);
+  //   $stmt->execute();
+
+  //   $tweet_datas = array();
+
+  //   while (1) {
+  //     $rec = $stmt->fetch(PDO::FETCH_ASSOC);
+  //   if ($rec == false) {
+  //       break;
+  //     }
+  //    $tweet_datas[] = $rec;
+  //    }
+  // $dbh = null;
      var_dump($sql);
 
     // SQLを実行
@@ -169,24 +181,24 @@ require('dbconnect.php');
           </ul>
         </form>
       </div>
-      <?php foreach($tweet_datas as $tweet_each){ ?>
       <div class="col-md-8 content-margin-top">
+        <?php foreach($tweet_array as $tweet_each){ ?>
         <div class="msg">
-          <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="48" height="48">
+          <img src="member_picture/<?php echo $tweet_each['picture_path']; ?>" width="48" height="48">
           <p><?php  echo $tweet_each['tweet']; ?>
-            <span class="name"> (Seed kun) </span>
+            <span class="name"> <?php echo $tweet_each['nick_name']; ?> </span>
             [<a href="#">Re</a>]
           </p>
           <p class="day">
             <a href="view.html">
-              2016-01-28 18:04
+              <?php  echo $tweet_each['created']; ?>
             </a>
             [<a href="#" style="color: #00994C;">編集</a>]
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>
+        <?php } ?>
       </div>
-      <?php } ?>
     </div>
   </div>
 
