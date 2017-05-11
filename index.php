@@ -69,6 +69,15 @@ require('dbconnect.php');
   while ($tweet = mysqli_fetch_assoc($tweets)) {
   $tweet_array[] = $tweet;
   }
+  //返信の場合
+  if(isset($_REQUEST['res'])){
+    //返信元のデータ（つぶやきとニックネーム）を取得してくる
+    $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['res'];
+    $reply = mysqli_query($db,$sql) or die(mysqli_error($db));
+    $reply_table = mysqli_fetch_assoc($reply);
+    //[@ニックネームつぶやき]という文字をセット
+    $reply_post = '@' .$reply_table['nick_name']. ' ' .$reply_table['tweet'];
+  }
 
 
 
@@ -169,8 +178,14 @@ require('dbconnect.php');
             <div class="form-group">
               <label class="col-sm-4 control-label">つぶやき</label>
               <div class="col-sm-8">
+                <?php
+                if(isset($reply_post)){ ?>
+                <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $reply_post; ?></textarea>
+                <input type="hidden" name="reply_tweet_id" value="<?php echo $_REQUEST['res'];?>">
+                <?php }else{?>
                 <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
-              </div>
+                <?php } ?>
+                </div>
             </div>
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
@@ -187,10 +202,10 @@ require('dbconnect.php');
           <img src="member_picture/<?php echo $tweet_each['picture_path']; ?>" width="48" height="48">
           <p><?php  echo $tweet_each['tweet']; ?>
             <span class="name"> <?php echo $tweet_each['nick_name']; ?> </span>
-            [<a href="#">Re</a>]
+            [<a href="index.php?res=<?php echo $tweet_each['tweet_id']; ?>">Re</a>]
           </p>
           <p class="day">
-            <a href="view.html">
+            <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
               <?php  echo $tweet_each['created']; ?>
             </a>
             [<a href="#" style="color: #00994C;">編集</a>]
