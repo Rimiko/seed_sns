@@ -8,13 +8,11 @@ if(isset($_REQUEST['tweet_id'])){
 // ・投稿者のプロフィール写真
 // ・投稿したつぶやき
 // ・投稿した日時
-    $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name`,`members`.`picture_path`,`tweets`.`created`,`tweets`.`tweet_id` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['tweet_id'];
+    $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name`,`members`.`picture_path`,`tweets`.`created` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['tweet_id'];
     $detail = mysqli_query($db,$sql) or die(mysqli_error($db));
     $detail_table = mysqli_fetch_assoc($detail);
   }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -59,21 +57,21 @@ if(isset($_REQUEST['tweet_id'])){
   <div class="container">
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
-      <?php
-      if(isset($detail_table)){ ?>
+       <?php if(isset($detail_table)){ ?>
         <div class="msg">
           <img src="member_picture/<?php echo $detail_table['picture_path']; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"><?php echo $detail_table['nick_name']; ?> </span></p>
+          <p>投稿者 : <span class="name"> <?php echo $detail_table['nick_name']; ?> </span></p>
           <p>
-            つぶやき : <br>
-            <?php echo $detail_table['tweet']; ?>
+            つぶやき : <?php echo $detail_table['tweet']; ?><br>
+            <form method="post" action="" class="form-horizontal" role="form">
+                <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
+                <input type="submit" class="btn btn-info" value="保存">
+            </form>
           </p>
           <p class="day">
-            <?php echo $detail_table['created']; ?>
-            <?php } ?>
-            [<a href="delete.php?tweet_id=<?php echo $detail_table['tweet_id']; ?>" style="color: #F33;">削除</a>]
           </p>
         </div>
+        <?php } ?>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
     </div>

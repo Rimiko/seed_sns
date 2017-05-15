@@ -44,9 +44,15 @@ require('dbconnect.php');
      //補足：つぶやきが空っぽではないときだけ、insertする
     if($_POST['tweet'] !== ''){
    //ポスト送信したときのみに動くようにする
-    $tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');
+    // $tweet = htmlspecialchars($_POST['tweet'],ENT_QUOTES,'UTF-8');
+    $tweet = h($_POST['tweet']);
     $login_member_id = $_SESSION['login_member_id'];
+
+    if (isset($_POST['reply_tweet_id'])) {
+    $reply_tweet_id = $_POST['reply_tweet_id'];
+  }else{
     $reply_tweet_id = 0;
+  }
 
     // $sql = 'INSERT INTO `tweets`(`tweet_id`, `tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES (NULL, "'.$tweet.'", "'.$_SESSION['login_member_id'].'", "%s", now(), now())';
     $sql = sprintf('INSERT INTO `tweets` (`tweet`, `member_id`, `reply_tweet_id`, `created`, `modified`) VALUES ("%s", "%s", "%s", now(), now());',
@@ -63,7 +69,7 @@ require('dbconnect.php');
 }
 
   //投稿を取得する
-  $sql = 'SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id ORDER BY `created` DESC;';
+  $sql = 'SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY `created` DESC;';
   $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
   $tweet_array = array();
   while ($tweet = mysqli_fetch_assoc($tweets)) {
@@ -78,7 +84,13 @@ require('dbconnect.php');
     //[@ニックネームつぶやき]という文字をセット
     $reply_post = '@' .$reply_table['nick_name']. ' ' .$reply_table['tweet'];
   }
+  //$input_value:引数
+  //h:関数名
+  //return oo :戻り値
 
+function h($input_value){
+  return htmlspecialchars($input_value,ENT_QUOTES,'UTF-8');
+}
 
 
   //   $stmt = $dbh->prepare($sql);
@@ -208,9 +220,14 @@ require('dbconnect.php');
             <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
               <?php  echo $tweet_each['created']; ?>
             </a>
-            [<a href="#" style="color: #00994C;">編集</a>]
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
+            <?php if($tweet_each['reply_tweet_id'] > 0){ ?>
+            |<a href="view.php?tweet_id= <?php echo $tweet_each['reply_tweet_id']?>">返信元のつぶやき</a>
+            <?php } ?>
+            <?php if ($_SESSION['login_member_id'] == $tweet_each['member_id']){ ?>
+            [<a href="edit.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>" style="color: #00994C;">編集</a>]
+            [<a href="delete.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
+           </p>
         </div>
         <?php } ?>
       </div>
