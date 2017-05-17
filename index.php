@@ -68,8 +68,43 @@ require('dbconnect.php');
   }
 }
 
+//ページング処理
+
+//0.ページ番号を取得（ある場合はGET送信、ない場合は１ページ目と認識する）
+$page = '';
+
+//GET送信されてきたページ番号を取得
+if(isset($_GET['page'])){
+  $page = $_GET['page'];
+}
+
+//ないときは1ページ目
+if ($page == ''){
+  $page = 1;
+}
+
+//1.表示する正しいページの数値を設定（MIN）
+$page = max($page,1);
+//2.必要なページ数を計算
+//1ページに表示する行数
+$row = 5;
+$sql = 'SELECT COUNT(*) AS cnt FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY t.`created` DESC ';
+
+$record_cnt = mysqli_query($db,$sql) or die(mysqli_error($db));
+
+$table_cnt = mysqli_fetch_assoc($record_cnt);
+//ceil() :切り上げする関数
+$maxPage = ceil($table_cnt['cnt'] / $row);
+
+//3.表示する正しいページ数を設定(MAX)
+$page = min($page,$maxPage);
+
+//4.ページに表示する件数だけ取得
+$start = ($page-1)* $row;
+
+
   //投稿を取得する
-  $sql = 'SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY `created` DESC;';
+  $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY `created` DESC LIMIT %d,%d',$start,$row);
   $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
   $tweet_array = array();
   while ($tweet = mysqli_fetch_assoc($tweets)) {
@@ -202,13 +237,32 @@ function h($input_value){
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">前</a></li>
+                <li>
+                <?php if ($page > 1){ ?>
+                <a href="index.php?page=<?php echo $page-1; ?>" class="btn btn-default">前</a>
+                <?php }else{ ?>
+                  前
+                <?php } ?>
+                </li>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
-                <li><a href="index.html" class="btn btn-default">次</a></li>
+                <li>
+                <?php if ($page < $maxPage){ ?>
+                <a href="index.php?page=<?php echo $page+1; ?>" class="btn btn-default">次</a>
+                <?php }else{ ?>
+                次
+                <?php } ?>
+                </li>
           </ul>
         </form>
       </div>
       <div class="col-md-8 content-margin-top">
+      <!-- 検索ボックス -->
+      <form action="" method="get" class="form-horizontal">
+      <input type="text" name="search_word">
+      <input type="submit" class="btn btn-success btn-xs" value="検索">
+      </form>
+
+      <!-- ここでつぶやいた内容を繰り返し表示する -->
         <?php foreach($tweet_array as $tweet_each){ ?>
         <div class="msg">
           <img src="member_picture/<?php echo $tweet_each['picture_path']; ?>" width="48" height="48">

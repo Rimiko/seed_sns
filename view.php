@@ -8,7 +8,7 @@ if(isset($_REQUEST['tweet_id'])){
 // ・投稿者のプロフィール写真
 // ・投稿したつぶやき
 // ・投稿した日時
-    $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name`,`members`.`picture_path`,`tweets`.`created`,`tweets`.`tweet_id` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['tweet_id'];
+    $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name`,`members`.`picture_path`,`tweets`.`created`,`tweets`.`tweet_id`,`members`.`member_id` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['tweet_id'];
     $detail = mysqli_query($db,$sql) or die(mysqli_error($db));
     $detail_table = mysqli_fetch_assoc($detail);
   }
@@ -71,7 +71,9 @@ if(isset($_REQUEST['tweet_id'])){
           <p class="day">
             <?php echo $detail_table['created']; ?>
             <?php } ?>
+            <?php if ($_SESSION['login_member_id'] == $detail_table['member_id']){ ?>
             [<a href="delete.php?tweet_id=<?php echo $detail_table['tweet_id']; ?>" style="color: #F33;">削除</a>]
+            <?php } ?>
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
