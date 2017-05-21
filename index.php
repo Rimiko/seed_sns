@@ -88,7 +88,11 @@ $page = max($page,1);
 //2.必要なページ数を計算
 //1ページに表示する行数
 $row = 5;
-$sql = 'SELECT COUNT(*) AS cnt FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY t.`created` DESC ';
+if(isset($_GET['search_word']) && !empty($_GET['search_word'])){
+$sql = sprintf('SELECT COUNT(*) AS cnt FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 and `tweet`LIKE "%%%s%%" ORDER BY t.`created` DESC ',mysqli_real_escape_string($db,$_GET['search_word']));
+}else{
+  $sql = 'SELECT COUNT(*) AS cnt FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY t.`created` DESC ';
+}
 
 $record_cnt = mysqli_query($db,$sql) or die(mysqli_error($db));
 
@@ -104,7 +108,12 @@ $start = ($page-1)* $row;
 
 
   //投稿を取得する
-  $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY `created` DESC LIMIT %d,%d',$start,$row);
+//キーワードで検索ｓされた場合
+if(isset($_GET['search_word']) && !empty($_GET['search_word'])){
+   $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 and `tweet`LIKE "%%%s%%" ORDER BY `created` DESC LIMIT %d,%d', mysqli_real_escape_string($db,$_GET['search_word']),$start,$row);
+   }else{
+   $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 ORDER BY `created` DESC LIMIT %d,%d',$start,$row);
+   }
   $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
   $tweet_array = array();
   while ($tweet = mysqli_fetch_assoc($tweets)) {
@@ -236,10 +245,17 @@ function h($input_value){
             </div>
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
+            <!-- 半角スペース↓ -->
                 &nbsp;&nbsp;&nbsp;&nbsp;
+                <?php
+                  $word = '';
+                  if (isset($_GET['search_word']) && !empty($_GET['search_word'])){
+                   $word = '&search_word='.$_GET['search_word'];
+                  }
+                ?>
                 <li>
                 <?php if ($page > 1){ ?>
-                <a href="index.php?page=<?php echo $page-1; ?>" class="btn btn-default">前</a>
+                <a href="index.php?page=<?php echo $page-1; ?><?php echo $word; ?>" class="btn btn-default">前</a>
                 <?php }else{ ?>
                   前
                 <?php } ?>
@@ -247,7 +263,7 @@ function h($input_value){
                 &nbsp;&nbsp;|&nbsp;&nbsp;
                 <li>
                 <?php if ($page < $maxPage){ ?>
-                <a href="index.php?page=<?php echo $page+1; ?>" class="btn btn-default">次</a>
+                <a href="index.php?page=<?php echo $page+1; ?><?php echo $word; ?>" class="btn btn-default">次</a>
                 <?php }else{ ?>
                 次
                 <?php } ?>
