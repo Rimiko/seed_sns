@@ -108,7 +108,7 @@ $start = ($page-1)* $row;
 
 
   //投稿を取得する
-//キーワードで検索ｓされた場合
+//キーワードで検索ｓされた場合()
 if(isset($_GET['search_word']) && !empty($_GET['search_word'])){
    $sql = sprintf('SELECT m.`nick_name`,m.`picture_path`,t.* FROM `members`m,`tweets`t WHERE m.member_id = t.member_id and t.delete_flag = 0 and `tweet`LIKE "%%%s%%" ORDER BY `created` DESC LIMIT %d,%d', mysqli_real_escape_string($db,$_GET['search_word']),$start,$row);
    }else{
@@ -117,9 +117,33 @@ if(isset($_GET['search_word']) && !empty($_GET['search_word'])){
   $tweets = mysqli_query($db,$sql) or die(mysqli_error($db));
   $tweet_array = array();
   while ($tweet = mysqli_fetch_assoc($tweets)) {
+    //$tweetには$tweet['tweet_id']が含まれている
+  $sql = 'SELECT COUNT(*) as `like_flag` FROM `likes` WHERE `tweet_id` = '.$tweet['tweet_id'].' AND `member_id` = '.$_SESSION['login_member_id'];
+  $likes = mysqli_query($db,$sql) or die(mysqli_error($db));
+  $like = mysqli_fetch_assoc($likes);
+
+  //いいね数獲得
+  $sql = 'SELECT COUNT(*) as `like_count` FROM `likes` WHERE `tweet_id` =' .$tweet['tweet_id'];
+
+  $likes_cnt = mysqli_query($db,$sql) or die(mysqli_error($db));
+  $like_cnt = mysqli_fetch_assoc($likes_cnt);
+
+  // echo '<pre>';
+  // var_dump('記事のID');
+  // var_dump($tweet['tweet_id']);
+  // var_dump('ログインした人がlikeしているかどうか');
+  // var_dump($like);
+  // echo '</pre>';
+
+  $tweet['like_flag'] = $like['like_flag'];
+  $tweet['like_count']=$like_cnt['like_count'];
+
   $tweet_array[] = $tweet;
   }
-  //返信の場合
+  // echo '<pre>';
+  // var_dump($tweet_array);
+  // echo '</pre>';
+  // //返信の場合
   if(isset($_REQUEST['res'])){
     //返信元のデータ（つぶやきとニックネーム）を取得してくる
     $sql = 'SELECT `tweets`.`tweet`,`members`.`nick_name` FROM `tweets` INNER JOIN `members` on `tweets`.`member_id` = `members`.`member_id` WHERE `tweet_id`='.$_REQUEST['res'];
@@ -285,6 +309,17 @@ function h($input_value){
           <p><?php  echo $tweet_each['tweet']; ?>
             <span class="name"> <?php echo $tweet_each['nick_name']; ?> </span>
             [<a href="index.php?res=<?php echo $tweet_each['tweet_id']; ?>">Re</a>]
+            <small><?php
+            if($tweet_each['like_count'] ==0){
+              }else{echo 'いいね数:'.$tweet_each['like_count'];} ?></small>
+            <?php if ($tweet_each['like_flag'] ==1 ){?>
+              <!-- 既にいいねされているときなので[いいねを取り消す] -->
+              <a href="unlike.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>"><small>いいねを取り消す</small></a>
+
+              <?php }else{ ?>
+              <!-- まだいいねがおされていないので[いいね] -->
+            <a href="like.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>"><small>いいね！</small></a>
+            <?php } ?>
           </p>
           <p class="day">
             <a href="view.php?tweet_id=<?php echo $tweet_each['tweet_id']; ?>">
